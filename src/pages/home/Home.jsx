@@ -1,0 +1,271 @@
+import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "../../features/auth/AuthContext";
+import { useFeed } from "../../features/feed/model/useFeed";
+import {
+  addComment,
+  addLike,
+  removeLike,
+  patchPost,
+  deleteStory,
+} from "../../entities/post/api/postsApi";
+import StoriesBar from "../../widgets/stories/stories-bar/ui/StoriesBar";
+import StoryViewer from "../../widgets/stories/story-viewer/ui/StoryViewer";
+import AddStoryModal from "../../widgets/stories/add-story-modal/ui/AddStoryModal";
+import PostCard from "../../widgets/posts/post-card/ui/PostCard";
+import CommentsModal from "../../widgets/posts/comments-modal/ui/CommentsModal";
+
+export default function Home() {
+  const { user } = useAuth();
+  const {
+    posts,
+    setPosts,
+    storyGroups,
+    myLikeIds,
+    setMyLikeIds,
+    loading,
+    error,
+    reload,
+  } = useFeed(user);
+
+  const [commentInputs, setCommentInputs] = useState({});
+  const [hiddenIds, setHiddenIds] = useState([]);
+  const [openCommentsId, setOpenCommentsId] = useState(null);
+  const [viewer, setViewer] = useState(null);
+  const [addStoryOpen, setAddStoryOpen] = useState(false);
+
+  useEffect(() => {
+    const onFeedRefresh = () => reload();
+    window.addEventListener("whygram:feed-refresh", onFeedRefresh);
+    return () => window.removeEventListener("whygram:feed-refresh", onFeedRefresh);
+  }, [reload]);
+
+  const visiblePosts = posts.filter((p) => !hiddenIds.includes(p.id));
+  const commentsPost = posts.find((p) => p.id === openCommentsId) || null;
+
+  const openStoryGroup = (groupIndex) => {
+    const group = storyGroups[groupIndex];
+    if (!group) return;
+
+    if (group.isOwn && group.items.length === 0) {
+      setAddStoryOpen(true);
+      return;
+    }
+
+    if (!group.items.length) return;
+    setViewer({ groupIndex, itemIndex: 0 });
+  };
+
+  const handleDeleteStory = async () => {
+    if (!viewer) return;
+    const group = storyGroups[viewer.groupIndex];
+    const item = group?.items?.[viewer.itemIndex];
+    if (!item) return;
+
+    if (!window.confirm("Удалить эту историю?")) return;
+
+    try {
+      await deleteStory(item.id);
+      setViewer(null);
+      reload();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const goNextStory = useCallback(() => {
+    setViewer((current) => {
+      if (!current) return null;
+      const group = storyGroups[current.groupIndex];
+      if (!group) return null;
+
+      if (current.itemIndex < group.items.length - 1) {
+        return { ...current, itemIndex: current.itemIndex + 1 };
+      }
+
+      for (let i = current.groupIndex + 1; i < storyGroups.length; i += 1) {
+        if (storyGroups[i]?.items?.length) {
+          return { groupIndex: i, itemIndex: 0 };
+        }
+      }
+      return null;
+    });
+  }, [storyGroups]);
+
+  const goPrevStory = useCallback(() => {
+    setViewer((current) => {
+      if (!current) return null;
+
+      if (current.itemIndex > 0) {
+        return { ...current, itemIndex: current.itemIndex - 1 };
+      }
+
+      for (let i = current.groupIndex - 1; i >= 0; i -= 1) {
+        const prev = storyGroups[i];
+        if (prev?.items?.length) {
+          return {
+            groupIndex: i,
+            itemIndex: prev.items.length - 1,
+          };
+        }
+      }
+      return current;
+    });
+  }, [storyGroups]);
+
+  const handleLike = async (post) => {
+    if (!user?.id) return;
+
+    const wasLiked = post.isLiked;
+    const nextCount = wasLiked
+      ? Math.max(0, (post.likesCount || 0) - 1)
+      : (post.likesCount || 0) + 1;
+
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === post.id
+          ? { ...p, isLiked: !wasLiked, likesCount: nextCount }
+          : p
+      )
+    );
+
+    try {
+      if (wasLiked) {
+        const likeId = myLikeIds[post.id];
+        if (likeId) {
+          await removeLike(likeId);
+          setMyLikeIds((map) => {
+            const next = { ...map };
+            delete next[post.id];
+            return next;
+          });
+        }
+      } else {
+        const created = await addLike(post.id, user.id);
+        setMyLikeIds((map) => ({ ...map, [post.id]: created.id }));
+      }
+      await patchPost(post.id, { likesCount: nextCount });
+    } catch {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === post.id
+            ? {
+                ...p,
+                isLiked: wasLiked,
+                likesCount: post.likesCount,
+              }
+            : p
+        )
+      );
+    }
+  };
+
+  const handleCommentSubmit = async (postId, e) => {
+    e.preventDefault();
+    const text = commentInputs[postId]?.trim();
+    if (!text || !user) return;
+
+    try {
+      const created = await addComment(postId, text, user.username, user.id);
+
+      setPosts((prev) =>
+        prev.map((p) => {
+          if (p.id !== postId) return p;
+          const comments = [...(p.comments || []), created];
+          return {
+            ...p,
+            comments,
+            commentsCount: comments.length,
+          };
+        })
+      );
+
+      setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
+
+      const updated = posts.find((p) => p.id === postId);
+      const nextCount = (updated?.comments?.length || 0) + 1;
+      try {
+        await patchPost(postId, { commentsCount: nextCount });
+      } catch {
+        return;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return (
+    <div className="flex justify-center py-4 px-2 sm:px-4">
+      <div className="w-full max-w-[470px] space-y-4">
+        <StoriesBar groups={storyGroups} onOpenGroup={openStoryGroup} />
+
+        {error ? (
+          <div className="text-center text-[#ed4956] text-sm">{error}</div>
+        ) : null}
+
+        {loading ? (
+          <div className="text-center py-12 text-[#a8a8a8]">
+            Загрузка ленты…
+          </div>
+        ) : visiblePosts.length === 0 ? (
+          <div className="text-center py-12 text-[#a8a8a8]">Нет публикаций</div>
+        ) : (
+          visiblePosts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              commentValue={commentInputs[post.id]}
+              onLike={handleLike}
+              onOpenComments={setOpenCommentsId}
+              onHide={(id) => setHiddenIds((list) => [...list, id])}
+              onToggleSave={(id) =>
+                setPosts((prev) =>
+                  prev.map((p) =>
+                    p.id === id ? { ...p, isSaved: !p.isSaved } : p
+                  )
+                )
+              }
+              onCommentChange={(id, value) =>
+                setCommentInputs((prev) => ({ ...prev, [id]: value }))
+              }
+              onCommentSubmit={handleCommentSubmit}
+            />
+          ))
+        )}
+      </div>
+
+      <CommentsModal
+        post={commentsPost}
+        commentValue={commentInputs[openCommentsId]}
+        onCommentChange={(e) =>
+          setCommentInputs((prev) => ({
+            ...prev,
+            [openCommentsId]: e.target.value,
+          }))
+        }
+        onSubmit={(e) => handleCommentSubmit(openCommentsId, e)}
+        onClose={() => setOpenCommentsId(null)}
+      />
+
+      {viewer ? (
+        <StoryViewer
+          groups={storyGroups}
+          groupIndex={viewer.groupIndex}
+          itemIndex={viewer.itemIndex}
+          onClose={() => setViewer(null)}
+          onPrev={goPrevStory}
+          onNext={goNextStory}
+          isOwn={storyGroups[viewer.groupIndex]?.isOwn}
+          onDelete={handleDeleteStory}
+        />
+      ) : null}
+
+      {addStoryOpen ? (
+        <AddStoryModal
+          user={user}
+          onClose={() => setAddStoryOpen(false)}
+          onCreated={reload}
+        />
+      ) : null}
+    </div>
+  );
+}
