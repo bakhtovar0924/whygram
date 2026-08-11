@@ -17,7 +17,7 @@ function isPhone(value) {
   return /^\+?[\d\s\-()]{7,20}$/.test(String(value).trim());
 }
 
-export default function Register() {
+const Register = function Register() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -354,3 +354,7 @@ export default function Register() {
     </div>
   );
 }
+
+
+
+export default Register;

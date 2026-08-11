@@ -1,6 +1,6 @@
 import { useAuth } from "../../auth/AuthContext";
 
-export default function FollowButton({ userId, username, className }) {
+const FollowButton = function FollowButton({ userId, username, className }) {
   const { user, isFollowing, follow, unfollow } = useAuth();
 
   if (!userId || (user && String(userId) === String(user.id))) return null;
@@ -29,3 +29,7 @@ export default function FollowButton({ userId, username, className }) {
     </button>
   );
 }
+
+
+
+export default FollowButton;

@@ -4,7 +4,7 @@ import {
   ProtectedRoute,
   PublicOnlyRoute,
 } from "../features/auth/ProtectedRoute";
-import Layout from "../widgets/layout/ui/Layout";
+import Layout from "../widgets/layout/Layout";
 
 const Login = lazy(() => import("../pages/auth/login/Login"));
 const Register = lazy(() => import("../pages/auth/register/Register"));
@@ -23,7 +23,7 @@ function Loader() {
   );
 }
 
-export default function App() {
+const App = function App() {
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
@@ -64,3 +64,7 @@ export default function App() {
     </Suspense>
   );
 }
+
+
+
+export default App;

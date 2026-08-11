@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { getPosts } from "../../entities/post/api/postsApi";
+import { getPosts } from "../../entities/post/postsApi";
 import { useAuth } from "../../features/auth/AuthContext";
-import FollowButton from "../../features/follow/ui/FollowButton";
+import ReelCard from "../../widgets/reels/reel-card/ReelCard";
 
-export default function Reels() {
+const Reels = function Reels() {
   const { followingIds } = useAuth();
   const [reels, setReels] = useState([]);
 
@@ -36,32 +36,13 @@ export default function Reels() {
         {reels.length === 0 ? (
           <p className="text-[#a8a8a8] text-sm text-center py-12">Пока нет Reels</p>
         ) : (
-          reels.map((r) => (
-            <div
-              key={r.id}
-              className="relative rounded-xl overflow-hidden bg-[#121212] border border-[#262626] aspect-[9/16] max-h-[80vh]"
-            >
-              {r.mediaType === "video" ? (
-                <video src={r.mediaUrl} controls className="w-full h-full object-cover" />
-              ) : (
-                <img src={r.mediaUrl} alt="" className="w-full h-full object-cover" />
-              )}
-              <div className="relative flex items-center gap-2 px-4 pt-3 pb-2 bg-gradient-to-t from-black/80 to-transparent">
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm">
-                    @{r.user?.username || r.username}
-                  </div>
-                  <div className="text-sm mt-0.5 line-clamp-2">{r.caption}</div>
-                </div>
-                <FollowButton
-                  userId={r.userId || r.user?.id}
-                  username={r.user?.username || r.username}
-                />
-              </div>
-            </div>
-          ))
+          reels.map((r) => <ReelCard key={r.id} reel={r} />)
         )}
       </div>
     </div>
   );
 }
+
+
+
+export default Reels;

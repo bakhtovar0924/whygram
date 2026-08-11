@@ -7,8 +7,11 @@
     "dev": "vite --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "server": "json-server --watch server/db.json --port 4000"
+    "server": "json-server server/db.json --port 4000",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
+  "homepage": "https://bakhtovar0924.github.io/whygram",
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
@@ -23,6 +26,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.0",
+    "gh-pages": "^6.3.0",
     "vite": "^6.0.0"
   }
 }

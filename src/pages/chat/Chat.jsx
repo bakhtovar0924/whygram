@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useAuth } from "../../features/auth/AuthContext";
-import { useConversations } from "../../features/chat/model/useConversations";
-import ChatWindow from "../../widgets/chat/chat-window/ui/ChatWindow";
+import useConversations from "../../features/chat/useConversations";
+import ChatWindow from "../../widgets/chat/chat-window/ChatWindow";
 
-export default function Chat() {
+const Chat = function Chat() {
   const { user } = useAuth();
   const { conversations, setMessages, refreshMessages } = useConversations();
 
@@ -35,3 +35,7 @@ export default function Chat() {
   );
 }
 
+
+
+
+export default Chat;

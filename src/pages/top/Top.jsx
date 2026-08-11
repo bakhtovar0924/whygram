@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { getPosts } from "../../entities/post/api/postsApi";
-import { getUsersList } from "../../entities/user/api/usersApi";
+import { getPosts } from "../../entities/post/postsApi";
+import { getUsersList } from "../../entities/user/usersApi";
 import FollowButton from "../../features/follow/ui/FollowButton";
 import { fuzzyScore } from "../../shared/lib/fuzzy";
 
-export default function Top() {
+const Top = function Top() {
   const [q, setQ] = useState("");
   const [posts, setPosts] = useState([]);
   const [users, setUsers] = useState([]);
@@ -228,3 +228,7 @@ export default function Top() {
     </div>
   );
 }
+
+
+
+export default Top;

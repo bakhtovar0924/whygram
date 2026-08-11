@@ -1,20 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../features/auth/AuthContext";
-import { useFeed } from "../../features/feed/model/useFeed";
+import useFeed from "../../features/feed/useFeed";
 import {
   addComment,
   addLike,
   removeLike,
   patchPost,
   deleteStory,
-} from "../../entities/post/api/postsApi";
-import StoriesBar from "../../widgets/stories/stories-bar/ui/StoriesBar";
-import StoryViewer from "../../widgets/stories/story-viewer/ui/StoryViewer";
-import AddStoryModal from "../../widgets/stories/add-story-modal/ui/AddStoryModal";
-import PostCard from "../../widgets/posts/post-card/ui/PostCard";
-import CommentsModal from "../../widgets/posts/comments-modal/ui/CommentsModal";
+} from "../../entities/post/postsApi";
+import StoriesBar from "../../widgets/stories/stories-bar/StoriesBar";
+import StoryViewer from "../../widgets/stories/story-viewer/StoryViewer";
+import AddStoryModal from "../../widgets/stories/add-story-modal/AddStoryModal";
+import PostCard from "../../widgets/posts/post-card/PostCard";
+import CommentsModal from "../../widgets/posts/comments-modal/CommentsModal";
 
-export default function Home() {
+const Home = function Home() {
   const { user } = useAuth();
   const {
     posts,
@@ -269,3 +269,7 @@ export default function Home() {
     </div>
   );
 }
+
+
+
+export default Home;

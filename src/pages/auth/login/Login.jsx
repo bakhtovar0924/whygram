@@ -4,7 +4,7 @@ import { TextField, Button, InputAdornment } from "@mui/material";
 import { loginUser } from "../../../features/auth/authApi";
 import { useAuth } from "../../../features/auth/AuthContext";
 
-export default function Login() {
+const Login = function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
@@ -174,3 +174,7 @@ export default function Login() {
     </div>
   );
 }
+
+
+
+export default Login;

@@ -1,4 +1,4 @@
-export default function Avatar({ src, name, size = 40, className = "" }) {
+const Avatar = function Avatar({ src, name, size = 40, className = "" }) {
   const url =
     src || `https://i.pravatar.cc/150?u=${encodeURIComponent(name || "user")}`;
   return (
@@ -10,3 +10,7 @@ export default function Avatar({ src, name, size = 40, className = "" }) {
     />
   );
 }
+
+
+
+export default Avatar;

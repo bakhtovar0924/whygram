@@ -4,4 +4,10 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  base: '/whygram/',
+  server: {
+    watch: {
+      ignored: ['**/server/db.json'], 
+    },
+  },
 });
