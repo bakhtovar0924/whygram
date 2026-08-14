@@ -54,7 +54,6 @@ const useFeed = function useFeed(user) {
             return {
               ...post,
               comments: Array.isArray(comments) ? comments : [],
-              isLiked: Boolean(likeMap[post.id]),
             };
           } catch {
             return {
@@ -63,7 +62,7 @@ const useFeed = function useFeed(user) {
               isLiked: Boolean(likeMap[post.id]),
             };
           }
-        })
+        }),
       );
 
       hasDataRef.current = true;
@@ -104,7 +103,6 @@ const useFeed = function useFeed(user) {
     error,
     reload,
   };
-}
-
+};
 
 export default useFeed;

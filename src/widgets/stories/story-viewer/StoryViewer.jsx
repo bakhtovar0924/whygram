@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import FollowButton from "../../../features/follow/ui/FollowButton";
 
-const DURATION_MS = 5000;
+const DEFAULT_DURATION_MS = 5000;
 
 const StoryViewer = function StoryViewer({
   groups,
@@ -15,6 +15,7 @@ const StoryViewer = function StoryViewer({
 }) {
   const progressRef = useRef(null);
   const timerRef = useRef(null);
+  const videoRef = useRef(null);
 
   const group = groups[groupIndex];
   const item = group?.items?.[itemIndex];
@@ -27,20 +28,44 @@ const StoryViewer = function StoryViewer({
     if (!item) return;
 
     const bar = progressRef.current;
-    if (bar) {
-      bar.style.transition = "none";
-      bar.style.width = "0%";
-      requestAnimationFrame(() => {
+    const isVideo = item.mediaType === "video";
+
+    const startProgress = (duration) => {
+      if (bar) {
+        bar.style.transition = "none";
+        bar.style.width = "0%";
         requestAnimationFrame(() => {
-          if (progressRef.current) {
-            progressRef.current.style.transition = `width ${DURATION_MS}ms linear`;
-            progressRef.current.style.width = "100%";
-          }
+          requestAnimationFrame(() => {
+            if (progressRef.current) {
+              progressRef.current.style.transition = `width ${duration}ms linear`;
+              progressRef.current.style.width = "100%";
+            }
+          });
         });
-      });
+      }
+      timerRef.current = setTimeout(() => onNext(), duration);
+    };
+
+    if (isVideo && videoRef.current) {
+      const video = videoRef.current;
+
+      const onLoaded = () => {
+        const duration = Math.min(
+          (video.duration || 5) * 1000,
+          15000, // максимум 15 сек на сторис
+        );
+        startProgress(duration);
+      };
+
+      if (video.readyState >= 1) {
+        onLoaded();
+      } else {
+        video.addEventListener("loadedmetadata", onLoaded, { once: true });
+      }
+    } else {
+      startProgress(DEFAULT_DURATION_MS);
     }
 
-    timerRef.current = setTimeout(() => onNext(), DURATION_MS);
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
@@ -87,14 +112,14 @@ const StoryViewer = function StoryViewer({
           <div className="flex items-center gap-2">
             <img
               src={
-                group.avatar ||
-                `https://i.pravatar.cc/150?u=${group.username}`
+                group.avatar || `https://i.pravatar.cc/150?u=${group.username}`
               }
               alt=""
               className="w-8 h-8 rounded-full object-cover"
             />
             <span className="text-sm font-semibold">{group.username}</span>
           </div>
+
           <div className="flex items-center gap-4">
             {isOwn ? (
               <button
@@ -123,6 +148,7 @@ const StoryViewer = function StoryViewer({
       <div className="flex-1 flex items-center justify-center relative z-0 px-2 pointer-events-none">
         {item.mediaType === "video" ? (
           <video
+            ref={videoRef}
             src={item.mediaUrl}
             autoPlay
             playsInline
@@ -139,8 +165,6 @@ const StoryViewer = function StoryViewer({
       </div>
     </div>
   );
-}
-
-
+};
 
 export default StoryViewer;

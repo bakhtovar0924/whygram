@@ -1,5 +1,4 @@
 import { useAuth } from "../../auth/AuthContext";
-
 const FollowButton = function FollowButton({ userId, username, className }) {
   const { user, isFollowing, follow, unfollow } = useAuth();
 

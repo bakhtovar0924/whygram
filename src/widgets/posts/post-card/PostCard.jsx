@@ -1,7 +1,10 @@
 import { formatCount } from "../../../shared/lib/formatCount";
 import FollowButton from "../../../features/follow/ui/FollowButton";
+import { useAuth } from "../../../features/auth/AuthContext";
+
 const PostCard = function PostCard({
   post,
+  isLiked,
   commentValue,
   onLike,
   onOpenComments,
@@ -10,10 +13,12 @@ const PostCard = function PostCard({
   onCommentChange,
   onCommentSubmit,
 }) {
+  const { user } = useAuth();
+
   const username = post.user?.username || post.username || "user";
-  const avatar =
-    post.user?.avatar || `https://i.pravatar.cc/150?u=${username}`;
+  const avatar = post.user?.avatar || `https://i.pravatar.cc/150?u=${username}`;
   const comments = post.comments || [];
+  const isOwnPost = String(post.userId || post.user?.id) === String(user?.id);
 
   return (
     <article className="border border-[#262626] rounded-lg overflow-hidden bg-black">
@@ -25,8 +30,15 @@ const PostCard = function PostCard({
             className="w-8 h-8 rounded-full object-cover"
           />
           <span className="text-sm font-semibold">{username}</span>
-          <FollowButton userId={post.userId || post.user?.id} username={username} />
+
+          {!isOwnPost && (
+            <FollowButton
+              userId={post.userId || post.user?.id}
+              username={username}
+            />
+          )}
         </div>
+
         <button
           type="button"
           onClick={() => onHide(post.id)}
@@ -39,13 +51,16 @@ const PostCard = function PostCard({
       <div
         className="bg-[#121212] max-h-[580px] flex items-center justify-center cursor-pointer"
         onDoubleClick={() => {
-          if (!post.isLiked) onLike(post);
+          if (!isLiked) onLike(post);
         }}
       >
         {post.mediaType === "video" ? (
           <video
             src={post.mediaUrl}
-            controls
+            muted
+            autoPlay
+            loop
+            playsInline
             className="w-full max-h-[580px] object-contain"
           />
         ) : (
@@ -67,12 +82,13 @@ const PostCard = function PostCard({
             >
               <i
                 className={
-                  post.isLiked
+                  isLiked
                     ? "fa-solid fa-heart text-[#ed4956]"
                     : "fa-regular fa-heart text-white"
                 }
               />
             </button>
+
             <button
               type="button"
               onClick={() => onOpenComments(post.id)}
@@ -80,8 +96,10 @@ const PostCard = function PostCard({
             >
               <i className="fa-regular fa-comment" />
             </button>
+
             <i className="fa-regular fa-paper-plane text-white" />
           </div>
+
           <button
             type="button"
             onClick={() => onToggleSave(post.id)}
@@ -147,8 +165,6 @@ const PostCard = function PostCard({
       </div>
     </article>
   );
-}
-
-
+};
 
 export default PostCard;

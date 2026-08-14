@@ -1,10 +1,12 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Routes, Route, Navigate } from "react-router-dom";
 import {
   ProtectedRoute,
   PublicOnlyRoute,
 } from "../features/auth/ProtectedRoute";
 import Layout from "../widgets/layout/Layout";
+import PublicProfile from "../pages/profile/PublicProfile";
 
 const Login = lazy(() => import("../pages/auth/login/Login"));
 const Register = lazy(() => import("../pages/auth/register/Register"));
@@ -24,6 +26,14 @@ function Loader() {
 }
 
 const App = function App() {
+  const mode = useSelector((state) => state.theme.mode);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", mode);
+    document.documentElement.classList.toggle("dark", mode === "dark");
+    document.documentElement.classList.toggle("light", mode === "light");
+  }, [mode]);
+
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
@@ -43,7 +53,7 @@ const App = function App() {
             </PublicOnlyRoute>
           }
         />
-
+        <Route path="/u/:username" element={<PublicProfile />} />
         <Route
           element={
             <ProtectedRoute>
@@ -63,8 +73,6 @@ const App = function App() {
       </Routes>
     </Suspense>
   );
-}
-
-
+};
 
 export default App;

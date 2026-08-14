@@ -122,7 +122,15 @@ const Register = function Register() {
 
       const created = await registerUser(newUser);
       login(created);
-      navigate("/", { replace: true });
+
+      const redirect = sessionStorage.getItem("redirectAfterAuth");
+      sessionStorage.removeItem("redirectAfterAuth");
+
+      if (redirect) {
+        navigate(redirect, { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
     } catch (err) {
       console.error(err);
       setError("Ошибка регистрации. Проверьте json-server (порт 4000).");
@@ -148,35 +156,10 @@ const Register = function Register() {
           <p className="text-[#a8a8a8] text-[17px] font-semibold text-center mb-4 leading-5">
             Зарегистрируйтесь, чтобы смотреть фото и видео ваших друзей.
           </p>
-
-          <Button
-            fullWidth
-            sx={{
-              height: "32px",
-              backgroundColor: "#0095f6",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "14px",
-              textTransform: "none",
-              borderRadius: "8px",
-              boxShadow: "none",
-              mb: 2,
-              "&:hover": { backgroundColor: "#1877f2", boxShadow: "none" },
-            }}
+          <form
+            className="w-full flex flex-col gap-2 mt-2"
+            onSubmit={handleSubmit}
           >
-            <i className="fa-brands fa-facebook text-[16px] mr-2"></i>
-            Войти через Facebook
-          </Button>
-
-          <div className="w-full flex items-center gap-4 my-2">
-            <div className="flex-1 h-px bg-[#363636]" />
-            <span className="text-[#a8a8a8] text-[13px] font-semibold uppercase">
-              или
-            </span>
-            <div className="flex-1 h-px bg-[#363636]" />
-          </div>
-
-          <form className="w-full flex flex-col gap-2 mt-2" onSubmit={handleSubmit}>
             <TextField
               name="contact"
               value={form.contact}
@@ -253,17 +236,10 @@ const Register = function Register() {
             />
 
             {error ? (
-              <p className="text-[#ed4956] text-[13px] text-center mt-1">{error}</p>
+              <p className="text-[#ed4956] text-[13px] text-center mt-1">
+                {error}
+              </p>
             ) : null}
-
-            <p className="text-[#a8a8a8] text-[12px] text-center mt-2 leading-4">
-              Люди, которые пользуются нашими услугами, могли загрузить вашу
-              контактную информацию в Whygram.{" "}
-              <a href="#" className="text-[#e0f1ff]">
-                Подробнее
-              </a>
-            </p>
-
             <p className="text-[#a8a8a8] text-[12px] text-center mt-2 leading-4">
               Регистрируясь, вы принимаете наши{" "}
               <a href="#" className="text-[#e0f1ff]">
@@ -288,7 +264,9 @@ const Register = function Register() {
                 mt: 2,
                 height: "32px",
                 backgroundColor:
-                  isFormValid && !loading ? "#0095f6" : "rgba(0, 149, 246, 0.3)",
+                  isFormValid && !loading
+                    ? "#0095f6"
+                    : "rgba(0, 149, 246, 0.3)",
                 color: "#fff",
                 fontWeight: 600,
                 fontSize: "14px",
@@ -353,8 +331,6 @@ const Register = function Register() {
       </footer>
     </div>
   );
-}
-
-
+};
 
 export default Register;

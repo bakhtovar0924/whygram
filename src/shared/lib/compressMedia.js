@@ -84,6 +84,11 @@ export async function compressImageFile(file) {
 export async function prepareMediaFile(file) {
   if (!file) throw new Error("Файл не выбран");
 
+  const MAX_SIZE = 25 * 1024 * 1024;
+  if (file.size > MAX_SIZE) {
+    throw new Error("Файл слишком большой (максимум 25 МБ)");
+  }
+
   if (file.type.startsWith("image/")) {
     return compressImageFile(file);
   }
@@ -95,7 +100,7 @@ export async function prepareMediaFile(file) {
       reason: "video-passthrough",
       originalSize: file.size,
       finalSize: file.size,
-      note: "Видео без перекодирования в браузере (нужен сервер/ffmpeg)",
+      note: "Видео без перекодирования в браузере",
     };
   }
 

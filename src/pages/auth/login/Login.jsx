@@ -49,9 +49,21 @@ const Login = function Login() {
     try {
       const user = await loginUser(form.login, form.password);
       login(user);
-      navigate(from, { replace: true });
+
+      // Куда вернуть после входа
+      const redirect = sessionStorage.getItem("redirectAfterAuth");
+      sessionStorage.removeItem("redirectAfterAuth");
+
+      if (redirect) {
+        navigate(redirect, { replace: true });
+      } else {
+        navigate(from || "/", { replace: true });
+      }
     } catch (err) {
-      if (err.message === "USER_NOT_FOUND" || err.message === "WRONG_PASSWORD") {
+      if (
+        err.message === "USER_NOT_FOUND" ||
+        err.message === "WRONG_PASSWORD"
+      ) {
         setError("Неверный логин или пароль");
       } else {
         setError("Ошибка сети. Запусти json-server на порту 4000.");
@@ -123,7 +135,9 @@ const Login = function Login() {
                 mt: 1.5,
                 height: "32px",
                 backgroundColor:
-                  isFormValid && !loading ? "#0095f6" : "rgba(0, 149, 246, 0.3)",
+                  isFormValid && !loading
+                    ? "#0095f6"
+                    : "rgba(0, 149, 246, 0.3)",
                 color: "#fff",
                 fontWeight: 600,
                 fontSize: "14px",
@@ -146,22 +160,6 @@ const Login = function Login() {
               {loading ? "Вход..." : "Войти"}
             </Button>
           </form>
-
-          <div className="w-full flex items-center gap-4 my-4">
-            <div className="flex-1 h-px bg-[#363636]" />
-            <span className="text-[#a8a8a8] text-[13px] font-semibold uppercase">
-              или
-            </span>
-            <div className="flex-1 h-px bg-[#363636]" />
-          </div>
-
-          <button
-            type="button"
-            className="flex items-center gap-2 text-[#0095f6] text-[14px] font-semibold bg-transparent border-none cursor-pointer"
-          >
-            <i className="fa-brands fa-facebook text-[18px]" />
-            Войти через Facebook
-          </button>
         </div>
 
         <div className="bg-black border border-[#363636] rounded-sm py-5 text-center text-[14px] text-[#f5f5f5]">
@@ -173,8 +171,6 @@ const Login = function Login() {
       </div>
     </div>
   );
-}
-
-
+};
 
 export default Login;

@@ -2,10 +2,15 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../features/auth/AuthContext";
 import ProfileSettings from "../../widgets/settings/profile-settings/ProfileSettings";
 import PrivacySettings from "../../widgets/settings/privacy-settings/PrivacySettings";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleTheme } from "../../features/theme/themeSlice";
 
 const Settings = function Settings() {
   const { logout } = useAuth();
   const navigate = useNavigate();
+
+  const mode = useSelector((state) => state.theme.mode);
+  const dispatch = useDispatch();
 
   return (
     <div className="max-w-xl mx-auto px-4 py-6">

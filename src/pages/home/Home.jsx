@@ -36,7 +36,8 @@ const Home = function Home() {
   useEffect(() => {
     const onFeedRefresh = () => reload();
     window.addEventListener("whygram:feed-refresh", onFeedRefresh);
-    return () => window.removeEventListener("whygram:feed-refresh", onFeedRefresh);
+    return () =>
+      window.removeEventListener("whygram:feed-refresh", onFeedRefresh);
   }, [reload]);
 
   const visiblePosts = posts.filter((p) => !hiddenIds.includes(p.id));
@@ -115,29 +116,28 @@ const Home = function Home() {
   const handleLike = async (post) => {
     if (!user?.id) return;
 
-    const wasLiked = post.isLiked;
+    const wasLiked = Boolean(myLikeIds[post.id]);
     const nextCount = wasLiked
       ? Math.max(0, (post.likesCount || 0) - 1)
       : (post.likesCount || 0) + 1;
-
+    if (wasLiked) {
+      setMyLikeIds((map) => {
+        const next = { ...map };
+        delete next[post.id];
+        return next;
+      });
+    } else {
+      setMyLikeIds((map) => ({ ...map, [post.id]: `temp_${Date.now()}` }));
+    }
     setPosts((prev) =>
-      prev.map((p) =>
-        p.id === post.id
-          ? { ...p, isLiked: !wasLiked, likesCount: nextCount }
-          : p
-      )
+      prev.map((p) => (p.id === post.id ? { ...p, likesCount: nextCount } : p)),
     );
 
     try {
       if (wasLiked) {
         const likeId = myLikeIds[post.id];
-        if (likeId) {
+        if (likeId && !String(likeId).startsWith("temp_")) {
           await removeLike(likeId);
-          setMyLikeIds((map) => {
-            const next = { ...map };
-            delete next[post.id];
-            return next;
-          });
         }
       } else {
         const created = await addLike(post.id, user.id);
@@ -145,16 +145,20 @@ const Home = function Home() {
       }
       await patchPost(post.id, { likesCount: nextCount });
     } catch {
+      setMyLikeIds((map) => {
+        const next = { ...map };
+        if (wasLiked) {
+          next[post.id] = myLikeIds[post.id]; // возвращаем старый
+        } else {
+          delete next[post.id];
+        }
+        return next;
+      });
+
       setPosts((prev) =>
         prev.map((p) =>
-          p.id === post.id
-            ? {
-                ...p,
-                isLiked: wasLiked,
-                likesCount: post.likesCount,
-              }
-            : p
-        )
+          p.id === post.id ? { ...p, likesCount: post.likesCount } : p,
+        ),
       );
     }
   };
@@ -176,7 +180,7 @@ const Home = function Home() {
             comments,
             commentsCount: comments.length,
           };
-        })
+        }),
       );
 
       setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
@@ -213,6 +217,7 @@ const Home = function Home() {
             <PostCard
               key={post.id}
               post={post}
+              isLiked={Boolean(myLikeIds[post.id])}
               commentValue={commentInputs[post.id]}
               onLike={handleLike}
               onOpenComments={setOpenCommentsId}
@@ -220,8 +225,8 @@ const Home = function Home() {
               onToggleSave={(id) =>
                 setPosts((prev) =>
                   prev.map((p) =>
-                    p.id === id ? { ...p, isSaved: !p.isSaved } : p
-                  )
+                    p.id === id ? { ...p, isSaved: !p.isSaved } : p,
+                  ),
                 )
               }
               onCommentChange={(id, value) =>
@@ -268,8 +273,6 @@ const Home = function Home() {
       ) : null}
     </div>
   );
-}
-
-
+};
 
 export default Home;
