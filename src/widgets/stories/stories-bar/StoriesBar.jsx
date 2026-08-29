@@ -33,6 +33,7 @@ const StoriesBar = function StoriesBar({ groups, onOpenGroup }) {
           </div>
           <span className="text-[11px] truncate w-full text-center">
             {group.isOwn ? "Ваша история" : group.username}
+            {group.items.length > 1 ? ` · ${group.items.length}` : ""}
           </span>
         </button>
       ))}

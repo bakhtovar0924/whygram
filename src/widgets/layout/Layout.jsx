@@ -139,7 +139,7 @@ const Layout = function Layout() {
       setError(
         err?.response?.data?.message ||
           err?.message ||
-          "Ошибка публикации. Проверьте json-server."
+          "Ошибка публикации."
       );
       setIsSubmitting(false);
     }
@@ -250,13 +250,11 @@ const Layout = function Layout() {
               onClick={closeCreate}
               className="absolute top-4 right-4 text-[#a8a8a8] hover:text-white bg-transparent border-0 cursor-pointer text-xl"
             >
-              <i className="fa-solid fa-xmark" />
+              Отмена
             </button>
-
             <h2 className="text-xl font-bold mb-4 text-center">
               Создание публикации
             </h2>
-
             <form onSubmit={handleCreatePost} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold uppercase text-[#a8a8a8] mb-1">

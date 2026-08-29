@@ -68,3 +68,7 @@ export async function createStory(storyData) {
 export async function deleteStory(storyId) {
   await api.delete(`/stories/${storyId}`);
 }
+
+export async function deletePost(postId) {
+  await api.delete(`/posts/${postId}`);
+}

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { getPosts } from "../../entities/post/postsApi";
 import { useAuth } from "../../features/auth/AuthContext";
 import ReelCard from "../../widgets/reels/reel-card/ReelCard";
@@ -10,7 +10,6 @@ import {
   patchPost,
   getLikesByUser,
 } from "../../entities/post/postsApi";
-
 const Reels = function Reels() {
   const { user, followingIds } = useAuth();
   const [reels, setReels] = useState([]);
@@ -18,8 +17,6 @@ const Reels = function Reels() {
   const [myLikeIds, setMyLikeIds] = useState({});
   const [openCommentsId, setOpenCommentsId] = useState(null);
   const [commentInputs, setCommentInputs] = useState({});
-  const containerRef = useRef(null);
-
   useEffect(() => {
     setLoading(true);
     Promise.all([
@@ -126,7 +123,9 @@ const Reels = function Reels() {
     }
   };
 
-  const commentsReel = reels.find((r) => r.id === openCommentsId) || null;
+  const commentsReel = openCommentsId
+    ? reels.find((r) => r.id === openCommentsId) || null
+    : null;
 
   if (loading) {
     return (
@@ -145,10 +144,7 @@ const Reels = function Reels() {
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="h-[100dvh] w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar bg-black"
-    >
+    <div className="h-[100dvh] w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar bg-black">
       {reels.map((reel) => (
         <div key={reel.id} className="h-[100dvh] w-full snap-start snap-always">
           <ReelCard

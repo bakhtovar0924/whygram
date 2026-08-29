@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { createStory } from "../../../entities/post/postsApi";
 import { readFileAsDataURL } from "../../../shared/lib/readFileAsDataURL";
 import { prepareMediaFile, formatBytes } from "../../../shared/lib/compressMedia";
@@ -9,14 +9,16 @@ const AddStoryModal = function AddStoryModal({ user, onClose, onCreated }) {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
+  const [publishedCount, setPublishedCount] = useState(0);
+  const fileInputRef = useRef(null);
 
   const reset = () => {
     if (preview) URL.revokeObjectURL(preview);
+    if (fileInputRef.current) fileInputRef.current.value = "";
     setFile(null);
     setPreview("");
     setMediaType("image");
     setError("");
-    setInfo("");
   };
 
   const handleClose = () => {
@@ -53,11 +55,12 @@ const AddStoryModal = function AddStoryModal({ user, onClose, onCreated }) {
     if (!file || !user) return;
     setLoading(true);
     setError("");
+    setInfo("");
 
     try {
       const mediaUrl = await readFileAsDataURL(file);
       await createStory({
-        id: `story_${Date.now()}`,
+        id: `story_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
         userId: user.id,
         username: user.username,
         avatar:
@@ -66,9 +69,13 @@ const AddStoryModal = function AddStoryModal({ user, onClose, onCreated }) {
         mediaType,
         createdAt: new Date().toISOString(),
       });
+      const nextCount = publishedCount + 1;
+      setPublishedCount(nextCount);
       reset();
+      setInfo(
+        `✓ История опубликована! Всего добавлено: ${nextCount}. Можете добавить ещё одну или закрыть окно.`
+      );
       onCreated?.();
-      onClose();
     } catch (err) {
       setError(err.message || "Не удалось опубликовать историю");
     } finally {
@@ -84,7 +91,7 @@ const AddStoryModal = function AddStoryModal({ user, onClose, onCreated }) {
           onClick={handleClose}
           className="absolute top-4 right-4 bg-transparent border-0 text-[#a8a8a8] cursor-pointer text-xl"
         >
-          <i className="fa-solid fa-xmark" />
+          Отмена
         </button>
 
         <h2 className="text-lg font-bold mb-4 text-center">
@@ -93,6 +100,7 @@ const AddStoryModal = function AddStoryModal({ user, onClose, onCreated }) {
 
         <form onSubmit={onSubmit} className="space-y-3">
           <input
+            ref={fileInputRef}
             type="file"
             accept="image/*,video/*"
             onChange={onFile}
@@ -100,7 +108,9 @@ const AddStoryModal = function AddStoryModal({ user, onClose, onCreated }) {
           />
 
           {error ? <p className="text-[#ed4956] text-xs">{error}</p> : null}
-          {info ? <p className="text-[#a8a8a8] text-xs">{info}</p> : null}
+          {info ? (
+            <p className="text-[#34c759] text-xs font-medium">{info}</p>
+          ) : null}
 
           {preview ? (
             <div className="rounded-lg overflow-hidden bg-black max-h-56 flex items-center justify-center">
@@ -127,6 +137,16 @@ const AddStoryModal = function AddStoryModal({ user, onClose, onCreated }) {
           >
             {loading ? "Публикация..." : "Поделиться в историю"}
           </button>
+
+          {publishedCount > 0 ? (
+            <button
+              type="button"
+              onClick={handleClose}
+              className="w-full py-2.5 rounded-lg bg-transparent border border-[#363636] text-white text-sm font-semibold cursor-pointer"
+            >
+              Готово
+            </button>
+          ) : null}
         </form>
       </div>
     </div>

@@ -6,6 +6,8 @@ import ProfileHeader from "../../widgets/profile/profile-header/ProfileHeader";
 import ProfileHighlights from "../../widgets/profile/profile-highlights/ProfileHighlights";
 import ProfileGrid from "../../widgets/profile/profile-grid/ProfileGrid";
 import ProfileViewer from "../../widgets/profile/profile-viewer/ProfileViewer";
+import { deletePost } from "../../entities/post/postsApi";
+import { deleteViewsForPost } from "../../entities/view/viewsApi";
 
 const PublicProfile = function PublicProfile() {
   const { username } = useParams();
@@ -122,6 +124,17 @@ const PublicProfile = function PublicProfile() {
   // Если это свой профиль — можно просто показать как обычно
   const isOwn = String(user?.id) === String(profileUser?.id);
 
+  const handleDeletePost = async (postId) => {
+    try {
+      await deletePost(postId);
+      await deleteViewsForPost(postId);
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+      setSelected(null);
+    } catch {
+      // не удалось удалить — модалка остаётся открытой
+    }
+  };
+
   return (
     <div className="w-full max-w-[935px] mx-auto px-4 sm:px-6 py-6 sm:py-8 text-[#f5f5f5] bg-black min-h-screen">
       <ProfileHeader
@@ -136,6 +149,8 @@ const PublicProfile = function PublicProfile() {
           post={selected}
           profile={profile}
           onClose={() => setSelected(null)}
+          isOwn={isOwn}
+          onDelete={handleDeletePost}
         />
       ) : null}
     </div>

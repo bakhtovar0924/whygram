@@ -60,6 +60,16 @@ const Top = function Top() {
 
   const noResults = results && !results.users.length && !results.reels.length;
 
+  // Закрытие модалки по ESC
+  useEffect(() => {
+    if (!selected) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setSelected(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selected]);
+
   return (
     <div className="max-w-4xl mx-auto px-3 py-6">
       <div className="relative max-w-md mx-auto mb-6">
@@ -175,14 +185,14 @@ const Top = function Top() {
                 index % 7 === 0 ? "col-span-2 row-span-2" : ""
               }`}
             >
-              <img
+              <video
                 src={item.mediaUrl}
                 alt=""
                 className="w-full h-full object-cover hover:scale-105 transition-transform"
               />
               {item.mediaType === "video" && (
                 <i className="fa-solid fa-play absolute top-2 right-2 text-white text-sm" />
-              )}
+              )}  
             </button>
           ))}
         </div>
@@ -194,9 +204,17 @@ const Top = function Top() {
           onClick={() => setSelected(null)}
         >
           <div
-            className="bg-black border border-[#363636] rounded-xl max-w-lg w-full overflow-hidden"
+            className="relative bg-black border border-[#363636] rounded-xl max-w-lg w-full overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
+            <button
+              type="button"
+              onClick={() => setSelected(null)}
+              aria-label="Закрыть"
+              className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/60 backdrop-blur border-0 text-white cursor-pointer flex items-center justify-center"
+            >
+              <i className="fa-solid fa-xmark text-lg" />
+            </button>
             {selected.mediaType === "video" ? (
               <video
                 src={selected.mediaUrl}

@@ -1,15 +1,23 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IconButton, Typography, Box } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import SendOutlinedIcon from "@mui/icons-material/SendOutlined";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import VolumeOffIcon from "@mui/icons-material/VolumeOff";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import FollowButton from "../../../features/follow/ui/FollowButton";
 import { formatCount } from "../../../shared/lib/formatCount";
 
 const ReelCard = function ReelCard({ reel, isLiked, onLike, onOpenComments }) {
   const [expanded, setExpanded] = useState(false);
+  const [muted, setMuted] = useState(true);
+  const [playing, setPlaying] = useState(true);
+
+  const containerRef = useRef(null);
+  const videoRef = useRef(null);
 
   const username = reel.user?.username || reel.username || "user";
   const avatar =
@@ -17,29 +25,81 @@ const ReelCard = function ReelCard({ reel, isLiked, onLike, onOpenComments }) {
     `https://i.pravatar.cc/150?u=${encodeURIComponent(username)}`;
   const caption = reel.caption || "";
   const isLong = caption.length > 80;
-  const showCaption = expanded || !isLong ? caption : caption.slice(0, 80) + "…";
+  const showCaption =
+    expanded || !isLong ? caption : caption.slice(0, 80) + "…";
+
+  // Видео воспроизводится только когда карточка видна в кадре
+  useEffect(() => {
+    const video = videoRef.current;
+    const el = containerRef.current;
+    if (!video || !el) return;
+
+    let observer;
+    if (typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            video.play().catch(() => {});
+            setPlaying(true);
+          } else {
+            video.pause();
+            setPlaying(false);
+          }
+        },
+        { threshold: 0.6 },
+      );
+      observer.observe(el);
+    } else {
+      video.play().catch(() => {});
+    }
+
+    return () => {
+      if (observer) observer.disconnect();
+    };
+  }, []);
+
+  const toggleMute = () => {
+    setMuted((m) => !m);
+  };
+
+  const togglePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) {
+      video.play().catch(() => {});
+      setPlaying(true);
+    } else {
+      video.pause();
+      setPlaying(false);
+    }
+  };
 
   return (
     <Box
+      ref={containerRef}
       sx={{
         position: "relative",
         width: "100%",
         height: "100%",
         bgcolor: "#000",
         overflow: "hidden",
+        cursor: "pointer",
+        touchAction: "pan-y",
       }}
     >
       {/* Видео */}
       <video
+        ref={videoRef}
         src={reel.mediaUrl}
-        muted
-        autoPlay
+        muted={muted}
         loop
         playsInline
+        onClick={togglePlay}
         style={{
           width: "100%",
           height: "100%",
           objectFit: "cover",
+          pointerEvents: "none",
         }}
       />
 
@@ -54,6 +114,25 @@ const ReelCard = function ReelCard({ reel, isLiked, onLike, onOpenComments }) {
         }}
       />
 
+      {/* Индикатор play при паузе */}
+      {!playing && (
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1,
+            pointerEvents: "none",
+          }}
+        >
+          <PlayArrowIcon
+            sx={{ fontSize: 80, color: "rgba(255,255,255,0.85)" }}
+          />
+        </Box>
+      )}
+
       {/* Правая колонка действий */}
       <Box
         sx={{
@@ -64,7 +143,7 @@ const ReelCard = function ReelCard({ reel, isLiked, onLike, onOpenComments }) {
           flexDirection: "column",
           alignItems: "center",
           gap: 2.5,
-          zIndex: 2,
+          zIndex: 3,
         }}
       >
         <Box sx={{ textAlign: "center" }}>
@@ -101,6 +180,24 @@ const ReelCard = function ReelCard({ reel, isLiked, onLike, onOpenComments }) {
         </IconButton>
       </Box>
 
+      {/* Кнопка звука (как в Instagram — слева внизу) */}
+      <div className="flex absolute right-3 bottom-8">
+        <IconButton
+          onClick={toggleMute}
+          sx={{
+            zIndex: 3,
+            color: "#fff",
+            p: 0.75,
+            "&:hover": { bgcolor: "rgba(255,255,255,0.15)" },
+          }}
+        >
+          {muted ? (
+            <VolumeOffIcon sx={{ fontSize: 26 }} />
+          ) : (
+            <VolumeUpIcon sx={{ fontSize: 26 }} />
+          )}
+        </IconButton>
+      </div>
       {/* Нижний блок: аватар + ник + описание */}
       <Box
         sx={{
@@ -112,7 +209,7 @@ const ReelCard = function ReelCard({ reel, isLiked, onLike, onOpenComments }) {
           color: "#fff",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, mb: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.3, mb: 1 }}>
           <img
             src={avatar}
             alt=""
@@ -127,7 +224,10 @@ const ReelCard = function ReelCard({ reel, isLiked, onLike, onOpenComments }) {
           <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
             @{username}
           </Typography>
-          <FollowButton userId={reel.userId || reel.user?.id} username={username} />
+          <FollowButton
+            userId={reel.userId || reel.user?.id}
+            username={username}
+          />
         </Box>
 
         {caption ? (

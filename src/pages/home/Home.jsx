@@ -20,6 +20,7 @@ const Home = function Home() {
     posts,
     setPosts,
     storyGroups,
+    setStoryGroups,
     myLikeIds,
     setMyLikeIds,
     loading,
@@ -66,7 +67,54 @@ const Home = function Home() {
 
     try {
       await deleteStory(item.id);
-      setViewer(null);
+
+      // Локально убираем удалённую историю из групп, чтобы панель
+      // историй и плеер сразу обновились без ожидания перезагрузки.
+      const nextGroups = storyGroups
+        .map((g) =>
+          g.userId === group.userId
+            ? { ...g, items: g.items.filter((s) => s.id !== item.id) }
+            : g,
+        )
+        .filter(
+          (g) => g.items.length > 0 || (g.isOwn && g.items.length === 0),
+        );
+      setStoryGroups(nextGroups);
+
+      // Переходим к следующей истории (та же группа) либо к следующей
+      // группе с историями, чтобы можно было удалять каждую по отдельности.
+      const newGroupIndex = nextGroups.findIndex(
+        (g) => g.userId === group.userId,
+      );
+      const startFrom = newGroupIndex >= 0 ? newGroupIndex : viewer.groupIndex;
+
+      let next = null;
+      if (newGroupIndex >= 0 && nextGroups[newGroupIndex].items.length) {
+        next = {
+          groupIndex: newGroupIndex,
+          itemIndex: Math.min(
+            viewer.itemIndex,
+            nextGroups[newGroupIndex].items.length - 1,
+          ),
+        };
+      } else {
+        for (let i = startFrom; i < nextGroups.length; i += 1) {
+          if (nextGroups[i]?.items?.length) {
+            next = { groupIndex: i, itemIndex: 0 };
+            break;
+          }
+        }
+        if (!next) {
+          for (let i = startFrom - 1; i >= 0; i -= 1) {
+            if (nextGroups[i]?.items?.length) {
+              next = { groupIndex: i, itemIndex: nextGroups[i].items.length - 1 };
+              break;
+            }
+          }
+        }
+      }
+      setViewer(next);
+
       reload();
     } catch (err) {
       console.error(err);

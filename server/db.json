@@ -1,32 +1,41 @@
 {
   "users": [
     {
-      "id": "1786684467165",
+      "id": "1787047001226",
       "email": "bakhtovar0924@gmail.com",
-      "phone": "+992043448080",
-      "fullName": "Bakhtovar Usmonov",
-      "username": "bakhtovar",
-      "password": "bakhtovar09",
-      "avatar": "https://i.pravatar.cc/150?u=bakhtovar",
-      "bio": "Создатель Whygram!",
-      "createdAt": "2026-08-14T05:14:27.165Z"
+      "phone": "929368030",
+      "fullName": "test",
+      "username": "test",
+      "password": "test1234",
+      "avatar": "https://i.pravatar.cc/150?u=hf",
+      "bio": "Test accaunt | dev",
+      "createdAt": "2026-08-18T09:56:41.226Z",
+      "followersCount": 2
     },
     {
-      "id": "1786687233913",
-      "email": "test@test.test",
-      "phone": null,
-      "fullName": "test test",
-      "username": "test",
-      "password": "testtest",
-      "avatar": "https://i.pravatar.cc/150?u=test",
+      "id": "1788002152092",
+      "email": "bakhtovar@gmail.com",
+      "phone": "192023910",
+      "fullName": "ierhuaf ihuef",
+      "username": "seihg",
+      "password": "12345678",
+      "avatar": "https://i.pravatar.cc/150?u=seihg",
       "bio": "",
-      "createdAt": "2026-08-14T06:00:33.913Z"
+      "createdAt": "2026-08-29T11:15:52.092Z"
     }
   ],
   "posts": [],
   "comments": [],
+  "views": [],
   "likes": [],
-  "follows": [],
+  "follows": [
+    {
+      "id": "f_1788003650111",
+      "followerId": "1788002152092",
+      "followingId": "1787047001226",
+      "createdAt": "2026-08-29T11:40:50.111Z"
+    }
+  ],
   "stories": [],
   "messages": [],
   "saves": [],
