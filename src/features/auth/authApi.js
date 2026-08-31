@@ -8,12 +8,16 @@ export async function getUsers() {
 export async function findUserByLogin(login) {
   const users = await getUsers();
   const value = login.trim().toLowerCase();
-  return users.find(
-    (u) =>
-      u.username?.toLowerCase() === value ||
-      u.email?.toLowerCase() === value ||
-      u.phone === login.trim()
-  );
+  const phoneValue = login.trim().replace(/\D/g, ""); // только цифры
+
+  return users.find((u) => {
+    const byUsername = u.username?.toLowerCase() === value;
+    const byEmail = u.email?.toLowerCase() === value;
+    const byPhone =
+      u.phone && u.phone.replace(/\D/g, "") === phoneValue;
+
+    return byUsername || byEmail || byPhone;
+  });
 }
 
 export async function isUsernameTaken(username, exceptUserId) {
@@ -38,7 +42,14 @@ export async function isEmailTaken(email, exceptUserId) {
 export async function isPhoneTaken(phone, exceptUserId) {
   if (!phone) return false;
   const users = await getUsers();
-  return users.some((u) => u.phone === phone.trim() && u.id !== exceptUserId);
+  const phoneValue = phone.trim().replace(/\D/g, "");
+
+  return users.some(
+    (u) =>
+      u.phone &&
+      u.phone.replace(/\D/g, "") === phoneValue &&
+      u.id !== exceptUserId
+  );
 }
 
 export async function registerUser(userData) {
@@ -48,9 +59,16 @@ export async function registerUser(userData) {
 
 export async function loginUser(login, password) {
   const user = await findUserByLogin(login);
-  if (!user) throw new Error("USER_NOT_FOUND");
-  if (user.password !== password) throw new Error("WRONG_PASSWORD");
-  const { password: _, ...safeUser } = user;
+
+  if (!user) {
+    throw new Error("USER_NOT_FOUND");
+  }
+
+  if (user.pass !== password) {
+    throw new Error("WRONG_PASSWORD");
+  }
+
+  const { pass: _, ...safeUser } = user;
   return safeUser;
 }
 

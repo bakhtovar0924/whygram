@@ -60,16 +60,16 @@ const Login = function Login() {
         navigate(from || "/", { replace: true });
       }
     } catch (err) {
+      console.error("Login error:", err); // ← обязательно посмотри в консоли
+
       if (
         err.message === "USER_NOT_FOUND" ||
         err.message === "WRONG_PASSWORD"
       ) {
         setError("Неверный логин или пароль");
       } else {
-        setError("Ошибка сети. Запусти json-server на порту 4000.");
+        setError("Ошибка сети или сервера. Проверь подключение к mokky.dev");
       }
-    } finally {
-      setLoading(false);
     }
   }
 

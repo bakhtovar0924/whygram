@@ -1,7 +1,7 @@
 const STORAGE_KEY = "whygram_app_config";
 
 export const DEFAULT_CONFIG = {
-  apiBaseUrl: import.meta.env.VITE_API_URL || "http://localhost:4000",
+  apiBaseUrl: import.meta.env.VITE_API_URL || "https://cac0b08d1d205a4b.mokky.dev",
   appName: "WHYGRAM",
   postsPerPage: 20,
   enableStories: true,

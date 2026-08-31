@@ -25,6 +25,7 @@ const Register = function Register() {
     contact: "",
     fullName: "",
     username: "",
+    pass: "",
     password: "",
     confirmPassword: "",
   });
@@ -42,7 +43,7 @@ const Register = function Register() {
     form.contact.trim() &&
     form.fullName.trim() &&
     form.username.trim().length >= 3 &&
-    form.password.length >= 6 &&
+    form.pass.length >= 6 &&
     form.confirmPassword === form.password;
 
   const inputSx = {
@@ -67,7 +68,7 @@ const Register = function Register() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (form.confirmPassword !== form.password) {
+    if (form.confirmPassword !== form.pass) {
       setError("Пароли не совпадают");
       return;
     }
@@ -114,7 +115,7 @@ const Register = function Register() {
         phone,
         fullName: form.fullName.trim(),
         username,
-        password: form.password,
+        pass: form.pass,
         avatar: `https://i.pravatar.cc/150?u=${encodeURIComponent(username)}`,
         bio: "",
         createdAt: new Date().toISOString(),
@@ -193,7 +194,7 @@ const Register = function Register() {
             <TextField
               name="password"
               type={showPassword ? "text" : "password"}
-              value={form.password}
+              value={form.pass}
               onChange={handleChange}
               fullWidth
               size="small"
@@ -201,7 +202,7 @@ const Register = function Register() {
               variant="outlined"
               sx={inputSx}
               InputProps={{
-                endAdornment: form.password ? (
+                endAdornment: form.pass ? (
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
