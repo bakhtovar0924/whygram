@@ -26,7 +26,6 @@ const Register = function Register() {
     fullName: "",
     username: "",
     pass: "",
-    password: "",
     confirmPassword: "",
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -44,7 +43,7 @@ const Register = function Register() {
     form.fullName.trim() &&
     form.username.trim().length >= 3 &&
     form.pass.length >= 6 &&
-    form.confirmPassword === form.password;
+    form.confirmPassword === form.pass;
 
   const inputSx = {
     "& .MuiOutlinedInput-root": {
