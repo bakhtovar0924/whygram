@@ -21,7 +21,7 @@ const Top = function Top() {
 
   const reels = useMemo(
     () => posts.filter((p) => p.mediaType === "video"),
-    [posts]
+    [posts],
   );
 
   const gridPosts = useMemo(() => posts, [posts]);
@@ -35,7 +35,7 @@ const Top = function Top() {
         const score = Math.max(
           fuzzyScore(query, u.username) || 0,
           fuzzyScore(query, u.fullName) || 0,
-          fuzzyScore(query, u.email) || 0
+          fuzzyScore(query, u.email) || 0,
         );
         return { type: "user", item: u, score };
       })
@@ -47,7 +47,7 @@ const Top = function Top() {
       .map((r) => {
         const score = Math.max(
           fuzzyScore(query, r.caption) || 0,
-          fuzzyScore(query, r.user?.username || r.username) || 0
+          fuzzyScore(query, r.user?.username || r.username) || 0,
         );
         return { type: "reel", item: r, score };
       })
@@ -99,7 +99,7 @@ const Top = function Top() {
                       src={
                         r.item.avatar ||
                         `https://i.pravatar.cc/150?u=${encodeURIComponent(
-                          r.item.username
+                          r.item.username,
                         )}`
                       }
                       alt=""
@@ -185,14 +185,23 @@ const Top = function Top() {
                 index % 7 === 0 ? "col-span-2 row-span-2" : ""
               }`}
             >
-              <video
-                src={item.mediaUrl}
-                alt=""
-                className="w-full h-full object-cover hover:scale-105 transition-transform"
-              />
+              {item.mediaType === "video" ? (
+                <video
+                  src={item.mediaUrl}
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover hover:scale-105 transition-transform"
+                />
+              ) : (
+                <img
+                  src={item.mediaUrl}
+                  alt=""
+                  className="w-full h-full object-cover hover:scale-105 transition-transform"
+                />
+              )}
               {item.mediaType === "video" && (
                 <i className="fa-solid fa-play absolute top-2 right-2 text-white text-sm" />
-              )}  
+              )}
             </button>
           ))}
         </div>
@@ -245,8 +254,6 @@ const Top = function Top() {
       )}
     </div>
   );
-}
-
-
+};
 
 export default Top;
