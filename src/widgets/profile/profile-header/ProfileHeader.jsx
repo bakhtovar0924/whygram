@@ -1,18 +1,22 @@
 import { Link } from "react-router-dom";
 import formatProfileCount from "../lib/formatProfileCount";
 import { useState } from "react";
+import FollowButton from "../../../features/follow/ui/FollowButton";
 
 const ProfileHeader = function ProfileHeader({
   profile,
   postsCount,
   isOwn = true,
+  storyGroup,
+  onOpenStories,
 }) {
   const [copied, setCopied] = useState(false);
+  const hasStoryIndicator = storyGroup !== undefined;
+  const hasStories = Boolean(storyGroup?.items?.length);
 
   const shareProfile = async () => {
     const url = `${window.location.origin}/u/${profile.username}`;
 
-    // Если браузер поддерживает системный Share
     if (navigator.share) {
       try {
         await navigator.share({
@@ -22,17 +26,14 @@ const ProfileHeader = function ProfileHeader({
         });
         return;
       } catch {
-        // пользователь отменил — ничего страшного
       }
     }
 
-    // Иначе копируем в буфер
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // запасной вариант
       prompt("Скопируйте ссылку на профиль:", url);
     }
   };
@@ -40,13 +41,29 @@ const ProfileHeader = function ProfileHeader({
   return (
     <header className="flex flex-col sm:flex-row sm:items-start gap-6 sm:gap-10 mb-8">
       <div className="flex justify-center sm:justify-start shrink-0">
-        <div className="p-[3px] rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600">
+        <button
+          type="button"
+          onClick={onOpenStories}
+          disabled={!hasStoryIndicator || !hasStories}
+          aria-label={
+            hasStories
+              ? `Посмотреть историю @${profile.username}`
+              : `У пользователя @${profile.username} нет активных историй`
+          }
+          className={`p-0.75 rounded-full border-0 ${
+            hasStoryIndicator
+              ? hasStories
+                ? "bg-linear-to-tr from-yellow-400 via-pink-500 to-purple-600 cursor-pointer"
+                : "bg-[#555] cursor-default"
+              : "bg-linear-to-tr from-yellow-400 via-pink-500 to-purple-600"
+          }`}
+        >
           <img
             src={profile.avatar}
             alt={`Фото профиля ${profile.username}`}
-            className="w-[86px] h-[86px] sm:w-[150px] sm:h-[150px] rounded-full object-cover border-4 border-black bg-[#121212]"
+            className="w-21.5 h-21.5 sm:w-37.5 sm:h-37.5 rounded-full object-cover border-4 border-black bg-[#121212]"
           />
-        </div>
+        </button>
       </div>
 
       <div className="flex-1 min-w-0">
@@ -81,14 +98,16 @@ const ProfileHeader = function ProfileHeader({
               </Link>
             </>
           ) : (
-            // чужой профиль — можно потом добавить FollowButton
-            <button
-              type="button"
-              onClick={shareProfile}
-              className="px-4 py-1.5 rounded-lg bg-[#262626] text-sm font-semibold hover:bg-[#363636] transition-colors border-0 cursor-pointer text-white"
-            >
-              {copied ? "Ссылка скопирована!" : "Поделиться"}
-            </button>
+            <>
+              <FollowButton userId={profile.id} username={profile.username} />
+              <button
+                type="button"
+                onClick={shareProfile}
+                className="px-4 py-1.5 rounded-lg bg-[#262626] text-sm font-semibold hover:bg-[#363636] transition-colors border-0 cursor-pointer text-white"
+              >
+                {copied ? "Ссылка скопирована!" : "Поделиться"}
+              </button>
+            </>
           )}
         </div>
 

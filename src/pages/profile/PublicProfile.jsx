@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../features/auth/AuthContext";
 import api from "../../shared/api/axios";
@@ -6,30 +6,37 @@ import ProfileHeader from "../../widgets/profile/profile-header/ProfileHeader";
 import ProfileHighlights from "../../widgets/profile/profile-highlights/ProfileHighlights";
 import ProfileGrid from "../../widgets/profile/profile-grid/ProfileGrid";
 import ProfileViewer from "../../widgets/profile/profile-viewer/ProfileViewer";
-import { deletePost } from "../../entities/post/postsApi";
+import StoryViewer from "../../widgets/stories/story-viewer/StoryViewer";
+import { deletePost, getStories } from "../../entities/post/postsApi";
+import { groupStoriesByUser } from "../../shared/lib/groupStories";
 import { deleteViewsForPost } from "../../entities/view/viewsApi";
 
 const PublicProfile = function PublicProfile() {
   const { username } = useParams();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuth } = useAuth();
   const navigate = useNavigate();
 
   const [profileUser, setProfileUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const [storyGroup, setStoryGroup] = useState(null);
+  const [storyViewer, setStoryViewer] = useState(null);
   const [notFound, setNotFound] = useState(false);
 
-  // Если не авторизован — сохраняем куда вернуть после логина
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuth) {
       sessionStorage.setItem("redirectAfterAuth", `/u/${username}`);
       navigate("/login", { replace: true });
     }
-  }, [isAuthenticated, username, navigate]);
+  }, [isAuth, username, navigate]);
 
   useEffect(() => {
-    if (!isAuthenticated || !username) return;
+    if (!isAuth || !username) return;
+    if (user?.username?.toLowerCase() === username.toLowerCase()) {
+      navigate("/profile", { replace: true });
+      return;
+    }
 
     let cancelled = false;
 
@@ -38,7 +45,6 @@ const PublicProfile = function PublicProfile() {
       setNotFound(false);
 
       try {
-        // Ищем пользователя по username
         const usersRes = await api.get("/users");
         const users = usersRes.data || [];
         const found = users.find(
@@ -56,7 +62,6 @@ const PublicProfile = function PublicProfile() {
         if (cancelled) return;
         setProfileUser(found);
 
-        // Загружаем его посты
         const postsRes = await api.get("/posts");
         const allPosts = postsRes.data || [];
         const mine = allPosts.filter(
@@ -66,6 +71,27 @@ const PublicProfile = function PublicProfile() {
             p.username === found.username,
         );
         setPosts(mine);
+
+        const stories = await getStories().catch(() => []);
+        const matchingGroup = groupStoriesByUser(
+          Array.isArray(stories) ? stories : [],
+          user,
+        ).find(
+          (group) =>
+            String(group.userId) === String(found.id) ||
+            group.username?.toLowerCase() === found.username?.toLowerCase(),
+        );
+        if (!cancelled) {
+          setStoryGroup(
+            matchingGroup || {
+              userId: found.id,
+              username: found.username,
+              avatar: found.avatar,
+              items: [],
+              isOwn: false,
+            },
+          );
+        }
       } catch {
         if (!cancelled) setNotFound(true);
       } finally {
@@ -77,11 +103,12 @@ const PublicProfile = function PublicProfile() {
     return () => {
       cancelled = true;
     };
-  }, [username, isAuthenticated]);
+  }, [username, isAuth, user?.username, navigate]);
 
   const profile = useMemo(() => {
     if (!profileUser) return null;
     return {
+      id: profileUser.id,
       username: profileUser.username,
       fullName:
         profileUser.fullName || profileUser.name || profileUser.username,
@@ -94,8 +121,25 @@ const PublicProfile = function PublicProfile() {
     };
   }, [profileUser]);
 
-  if (!isAuthenticated) {
-    return null; // редирект уже идёт
+  const goNextStory = useCallback(() => {
+    setStoryViewer((current) => {
+      if (!current || !storyGroup) return null;
+      return current.itemIndex < storyGroup.items.length - 1
+        ? { itemIndex: current.itemIndex + 1 }
+        : null;
+    });
+  }, [storyGroup]);
+
+  const goPrevStory = useCallback(() => {
+    setStoryViewer((current) =>
+      current && current.itemIndex > 0
+        ? { itemIndex: current.itemIndex - 1 }
+        : current,
+    );
+  }, []);
+
+  if (!isAuth) {
+    return null;
   }
 
   if (loading) {
@@ -121,7 +165,6 @@ const PublicProfile = function PublicProfile() {
     );
   }
 
-  // Если это свой профиль — можно просто показать как обычно
   const isOwn = String(user?.id) === String(profileUser?.id);
 
   const handleDeletePost = async (postId) => {
@@ -131,19 +174,24 @@ const PublicProfile = function PublicProfile() {
       setPosts((prev) => prev.filter((p) => p.id !== postId));
       setSelected(null);
     } catch {
-      // не удалось удалить — модалка остаётся открытой
     }
   };
 
+  const openStories = () => {
+    if (storyGroup?.items?.length) setStoryViewer({ itemIndex: 0 });
+  };
+
   return (
-    <div className="w-full max-w-[935px] mx-auto px-4 sm:px-6 py-6 sm:py-8 text-[#f5f5f5] bg-black min-h-screen">
+    <div className="w-full max-w-233.75 mx-auto px-4 sm:px-6 py-6 sm:py-8 text-[#f5f5f5] bg-black min-h-screen">
       <ProfileHeader
         profile={profile}
         postsCount={posts.length}
         isOwn={isOwn}
+        storyGroup={storyGroup}
+        onOpenStories={openStories}
       />
       <ProfileHighlights highlights={[]} />
-      <ProfileGrid posts={posts} loading={false} onOpen={setSelected} />
+      <ProfileGrid posts={posts} loading={false} onOpen={setSelected} isOwn={isOwn} />
       {selected ? (
         <ProfileViewer
           post={selected}
@@ -151,6 +199,16 @@ const PublicProfile = function PublicProfile() {
           onClose={() => setSelected(null)}
           isOwn={isOwn}
           onDelete={handleDeletePost}
+        />
+      ) : null}
+      {storyViewer && storyGroup ? (
+        <StoryViewer
+          groups={[storyGroup]}
+          groupIndex={0}
+          itemIndex={storyViewer.itemIndex}
+          onClose={() => setStoryViewer(null)}
+          onPrev={goPrevStory}
+          onNext={goNextStory}
         />
       ) : null}
     </div>
