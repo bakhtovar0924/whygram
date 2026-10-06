@@ -13,12 +13,6 @@ const ProfileHighlights = function ProfileHighlights({ highlights }) {
           <span className="text-xs truncate w-full text-center text-[#f5f5f5]">{h.title}</span>
         </button>
       ))}
-      <button type="button" className="flex flex-col items-center gap-1.5 shrink-0 w-[76px] text-[#a8a8a8]">
-        <div className="w-[66px] h-[66px] rounded-full border border-dashed border-[#363636] flex items-center justify-center text-2xl">
-          +
-        </div>
-        <span className="text-xs">Создать</span>
-      </button>
     </div>
   );
 }

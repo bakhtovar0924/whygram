@@ -68,8 +68,6 @@ const Home = function Home() {
     try {
       await deleteStory(item.id);
 
-      // Локально убираем удалённую историю из групп, чтобы панель
-      // историй и плеер сразу обновились без ожидания перезагрузки.
       const nextGroups = storyGroups
         .map((g) =>
           g.userId === group.userId
@@ -81,8 +79,6 @@ const Home = function Home() {
         );
       setStoryGroups(nextGroups);
 
-      // Переходим к следующей истории (та же группа) либо к следующей
-      // группе с историями, чтобы можно было удалять каждую по отдельности.
       const newGroupIndex = nextGroups.findIndex(
         (g) => g.userId === group.userId,
       );

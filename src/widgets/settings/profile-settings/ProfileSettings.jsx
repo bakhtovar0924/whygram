@@ -43,18 +43,15 @@ const ProfileSettings = function ProfileSettings() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // Загрузка файла с устройства
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Проверка типа
     if (!file.type.startsWith("image/")) {
       setError("Можно загружать только изображения");
       return;
     }
 
-    // Ограничение размера (например 1.5 МБ)
     if (file.size > 1.5 * 1024 * 1024) {
       setError("Файл слишком большой. Максимум 1.5 МБ");
       return;
@@ -75,7 +72,6 @@ const ProfileSettings = function ProfileSettings() {
     };
     reader.readAsDataURL(file);
 
-    // очищаем input, чтобы можно было выбрать тот же файл снова
     e.target.value = "";
   };
 

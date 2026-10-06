@@ -53,7 +53,6 @@ const App = function App() {
             </PublicOnlyRoute>
           }
         />
-        <Route path="/u/:username" element={<PublicProfile />} />
         <Route
           element={
             <ProtectedRoute>
@@ -64,6 +63,7 @@ const App = function App() {
           <Route path="/" element={<Home />} />
           <Route path="/top" element={<Top />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/u/:username" element={<PublicProfile />} />
           <Route path="/reels" element={<Reels />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/settings" element={<Settings />} />

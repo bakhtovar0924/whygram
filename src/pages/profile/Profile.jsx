@@ -77,7 +77,6 @@ const Profile = function Profile() {
       setPosts((prev) => prev.filter((p) => p.id !== postId));
       setSelected(null);
     } catch {
-      // не удалось удалить — модалка остаётся открытой
     }
   };
 

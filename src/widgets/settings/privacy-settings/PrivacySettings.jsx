@@ -73,7 +73,6 @@ const PrivacySettings = function PrivacySettings() {
     }
   };
 
-  // Общий стиль для кнопки "Показать / Скрыть"
   const showBtnClass =
     "absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-semibold text-white bg-transparent border-none cursor-pointer select-none";
 

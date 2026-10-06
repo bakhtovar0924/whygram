@@ -7,7 +7,7 @@ const TABS = [
   { id: "tagged", label: "ОТМЕТКИ", icon: "fa-regular fa-user" },
 ];
 
-const ProfileGrid = function ProfileGrid({ posts, loading, onOpen }) {
+const ProfileGrid = function ProfileGrid({ posts, loading, onOpen, isOwn = true }) {
   const [tab, setTab] = useState("posts");
 
   const gridPosts =
@@ -45,9 +45,13 @@ const ProfileGrid = function ProfileGrid({ posts, loading, onOpen }) {
           <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center mb-4">
             <i className="fa-solid fa-camera text-xl" />
           </div>
-          <h2 className="text-2xl font-extrabold mb-1">Поделиться фото</h2>
+          <h2 className="text-2xl font-extrabold mb-1">
+            {isOwn ? "Поделиться фото" : "Пока нет публикаций"}
+          </h2>
           <p className="text-sm text-[#a8a8a8] max-w-xs">
-            Когда вы поделитесь фото и видео, они появятся в вашем профиле.
+            {isOwn
+              ? "Когда вы поделитесь фото и видео, они появятся в вашем профиле."
+              : "Публикации и видео этого пользователя появятся здесь."}
           </p>
         </div>
       ) : (

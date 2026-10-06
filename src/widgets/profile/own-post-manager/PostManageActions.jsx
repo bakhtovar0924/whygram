@@ -11,8 +11,6 @@ function formatViewedAt(iso) {
   });
 }
 
-// Панель управления собственной публикацией внутри модалки профиля:
-// «Кто посмотрел» и «Удалить».
 const PostManageActions = function PostManageActions({ postId, onDelete }) {
   const [showViewers, setShowViewers] = useState(false);
   const [viewers, setViewers] = useState([]);
@@ -21,7 +19,6 @@ const PostManageActions = function PostManageActions({ postId, onDelete }) {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
 
-  // На старте тихо подгружаем количество просмотров для бейджа
   useEffect(() => {
     let cancelled = false;
     setLoadingViews(true);
@@ -51,7 +48,6 @@ const PostManageActions = function PostManageActions({ postId, onDelete }) {
     setError("");
     try {
       await onDelete(postId);
-      // Владелец панели сам закроет модалку и обновит профиль
     } catch {
       setError("Не удалось удалить публикацию.");
       setDeleting(false);

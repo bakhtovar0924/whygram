@@ -50,7 +50,6 @@ const Login = function Login() {
       const user = await loginUser(form.login, form.password);
       login(user);
 
-      // Куда вернуть после входа
       const redirect = sessionStorage.getItem("redirectAfterAuth");
       sessionStorage.removeItem("redirectAfterAuth");
 
@@ -60,7 +59,7 @@ const Login = function Login() {
         navigate(from || "/", { replace: true });
       }
     } catch (err) {
-      console.error("Login error:", err); // ← обязательно посмотри в консоли
+      console.error("Login error:", err);
 
       if (
         err.message === "USER_NOT_FOUND" ||
