@@ -1,6 +1,7 @@
 import { formatCount } from "../../../shared/lib/formatCount";
 import FollowButton from "../../../features/follow/ui/FollowButton";
 import { useAuth } from "../../../features/auth/AuthContext";
+import { Link } from "react-router-dom";
 
 const PostCard = function PostCard({
   post,
@@ -23,13 +24,24 @@ const PostCard = function PostCard({
   return (
     <article className="border border-[#262626] rounded-lg overflow-hidden bg-black">
       <div className="flex items-center justify-between px-3 py-2.5">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <Link
+            to={`/u/${encodeURIComponent(username)}`}
+            aria-label={`Открыть профиль @${username}`}
+            className="shrink-0"
+          >
           <img
             src={avatar}
             alt=""
             className="w-8 h-8 rounded-full object-cover"
           />
-          <span className="text-sm font-semibold">{username}</span>
+          </Link>
+          <Link
+            to={`/u/${encodeURIComponent(username)}`}
+            className="text-sm font-semibold truncate text-white"
+          >
+            {username}
+          </Link>
 
           {!isOwnPost && (
             <FollowButton
@@ -121,7 +133,12 @@ const PostCard = function PostCard({
 
         {post.caption ? (
           <p className="text-sm">
-            <span className="font-semibold mr-1">{username}</span>
+            <Link
+              to={`/u/${encodeURIComponent(username)}`}
+              className="font-semibold mr-1 text-white"
+            >
+              {username}
+            </Link>
             {post.caption}
           </p>
         ) : null}
@@ -138,7 +155,12 @@ const PostCard = function PostCard({
 
         {comments.slice(-2).map((c) => (
           <p key={c.id} className="text-xs">
-            <span className="font-semibold mr-1">{c.username}</span>
+            <Link
+              to={`/u/${encodeURIComponent(c.username)}`}
+              className="font-semibold mr-1 text-white"
+            >
+              {c.username}
+            </Link>
             {c.text}
           </p>
         ))}

@@ -10,6 +10,7 @@ import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import FollowButton from "../../../features/follow/ui/FollowButton";
 import { formatCount } from "../../../shared/lib/formatCount";
+import { Link } from "react-router-dom";
 
 const ReelCard = function ReelCard({ reel, isLiked, onLike, onOpenComments }) {
   const [expanded, setExpanded] = useState(false);
@@ -28,7 +29,6 @@ const ReelCard = function ReelCard({ reel, isLiked, onLike, onOpenComments }) {
   const showCaption =
     expanded || !isLong ? caption : caption.slice(0, 80) + "…";
 
-  // Видео воспроизводится только когда карточка видна в кадре
   useEffect(() => {
     const video = videoRef.current;
     const el = containerRef.current;
@@ -98,7 +98,7 @@ const ReelCard = function ReelCard({ reel, isLiked, onLike, onOpenComments }) {
         style={{
           width: "100%",
           height: "100%",
-          objectFit: "cover",
+          objectFit: "contain",
           pointerEvents: "none",
         }}
       />
@@ -210,6 +210,11 @@ const ReelCard = function ReelCard({ reel, isLiked, onLike, onOpenComments }) {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.3, mb: 1 }}>
+          <Link
+            to={`/u/${encodeURIComponent(username)}`}
+            aria-label={`Открыть профиль @${username}`}
+            style={{ display: "flex", alignItems: "center", gap: 10, color: "inherit", textDecoration: "none" }}
+          >
           <img
             src={avatar}
             alt=""
@@ -224,6 +229,7 @@ const ReelCard = function ReelCard({ reel, isLiked, onLike, onOpenComments }) {
           <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
             @{username}
           </Typography>
+          </Link>
           <FollowButton
             userId={reel.userId || reel.user?.id}
             username={username}

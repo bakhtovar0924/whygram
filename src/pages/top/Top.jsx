@@ -3,6 +3,7 @@ import { getPosts } from "../../entities/post/postsApi";
 import { getUsersList } from "../../entities/user/usersApi";
 import FollowButton from "../../features/follow/ui/FollowButton";
 import { fuzzyScore } from "../../shared/lib/fuzzy";
+import { Link } from "react-router-dom";
 
 const Top = function Top() {
   const [q, setQ] = useState("");
@@ -60,7 +61,6 @@ const Top = function Top() {
 
   const noResults = results && !results.users.length && !results.reels.length;
 
-  // Закрытие модалки по ESC
   useEffect(() => {
     if (!selected) return;
     const onKey = (e) => {
@@ -95,20 +95,29 @@ const Top = function Top() {
                     key={r.item.id}
                     className="flex items-center gap-3 p-3 rounded-xl bg-[#121212] border border-[#262626]"
                   >
-                    <img
-                      src={
+                    <Link
+                      to={`/u/${encodeURIComponent(r.item.username)}`}
+                      aria-label={`Открыть профиль @${r.item.username}`}
+                      className="shrink-0"
+                    >
+                      <img
+                        src={
                         r.item.avatar ||
                         `https://i.pravatar.cc/150?u=${encodeURIComponent(
                           r.item.username,
                         )}`
-                      }
-                      alt=""
-                      className="w-10 h-10 rounded-full object-cover shrink-0"
-                    />
+                        }
+                        alt=""
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    </Link>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold truncate">
+                      <Link
+                        to={`/u/${encodeURIComponent(r.item.username)}`}
+                        className="block text-sm font-semibold truncate text-white"
+                      >
                         @{r.item.username}
-                      </div>
+                      </Link>
                       <div className="text-xs text-[#a8a8a8] truncate">
                         {r.item.fullName || r.item.bio || ""}
                       </div>
@@ -239,9 +248,12 @@ const Top = function Top() {
             )}
             <div className="p-3 text-sm">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-semibold mr-2">
+                <Link
+                  to={`/u/${encodeURIComponent(selected.user?.username || selected.username)}`}
+                  className="font-semibold mr-2 text-white"
+                >
                   {selected.user?.username || selected.username}
-                </span>
+                </Link>
                 <FollowButton
                   userId={selected.userId || selected.user?.id}
                   username={selected.user?.username || selected.username}

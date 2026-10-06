@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import FollowButton from "../../../features/follow/ui/FollowButton";
+import { Link } from "react-router-dom";
 
 const DEFAULT_DURATION_MS = 5000;
 
@@ -109,7 +110,12 @@ const StoryViewer = function StoryViewer({
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link
+            to={isOwn ? "/profile" : `/u/${encodeURIComponent(group.username)}`}
+            className="flex items-center gap-2 min-w-0 text-white"
+            aria-label={`Открыть профиль @${group.username}`}
+            onClick={(event) => event.stopPropagation()}
+          >
             <img
               src={
                 group.avatar || `https://i.pravatar.cc/150?u=${group.username}`
@@ -117,8 +123,8 @@ const StoryViewer = function StoryViewer({
               alt=""
               className="w-8 h-8 rounded-full object-cover"
             />
-            <span className="text-sm font-semibold">{group.username}</span>
-          </div>
+            <span className="text-sm font-semibold truncate">{group.username}</span>
+          </Link>
 
           <div className="flex items-center gap-4">
             {isOwn ? (

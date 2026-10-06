@@ -3,6 +3,7 @@ import formatProfileCount from "../lib/formatProfileCount";
 import { useAuth } from "../../../features/auth/AuthContext";
 import { recordView } from "../../../entities/view/viewsApi";
 import PostManageActions from "../own-post-manager/PostManageActions";
+import { Link } from "react-router-dom";
 
 const ProfileViewer = function ProfileViewer({
   post,
@@ -17,8 +18,6 @@ const ProfileViewer = function ProfileViewer({
   const ownerId = String(post.userId || post.user?.id || "");
   const myId = user?.id ? String(user.id) : "";
 
-  // Запись просмотра при открытии чужой публикации (для своих не пишем).
-  // Повторные открытия не дублируются: recordView проверяет по postId+userId.
   useEffect(() => {
     if (recordedRef.current) return;
     if (!myId || !ownerId || myId === ownerId) return;
@@ -55,17 +54,26 @@ const ProfileViewer = function ProfileViewer({
           )}
         </div>
         <div className="md:w-[45%] flex flex-col p-4 border-t md:border-t-0 md:border-l border-[#262626]">
-          <div className="flex items-center gap-3 pb-3 border-b border-[#262626]">
+          <Link
+            to={isOwn ? "/profile" : `/u/${encodeURIComponent(profile.username)}`}
+            className="flex items-center gap-3 pb-3 border-b border-[#262626] text-white"
+            aria-label={`Открыть профиль @${profile.username}`}
+          >
             <img
               src={profile.avatar}
               alt=""
               className="w-8 h-8 rounded-full object-cover"
             />
             <span className="text-sm font-semibold">{profile.username}</span>
-          </div>
+          </Link>
           {post.caption && (
             <p className="py-3 text-sm">
-              <span className="font-semibold mr-2">{profile.username}</span>
+              <Link
+                to={isOwn ? "/profile" : `/u/${encodeURIComponent(profile.username)}`}
+                className="font-semibold mr-2 text-white"
+              >
+                {profile.username}
+              </Link>
               {post.caption}
             </p>
           )}

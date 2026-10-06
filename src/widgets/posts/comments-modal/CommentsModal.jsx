@@ -1,6 +1,10 @@
+import { Link } from "react-router-dom";
+
 const CommentsModal = function CommentsModal({
   post,
   commentValue,
+  loading = false,
+  error = "",
   onCommentChange,
   onSubmit,
   onClose,
@@ -30,14 +34,25 @@ const CommentsModal = function CommentsModal({
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {comments.length === 0 ? (
+          {loading ? (
+            <p className="text-[#a8a8a8] text-sm text-center py-8">
+              Загружаем комментарии…
+            </p>
+          ) : error ? (
+            <p className="text-[#ed4956] text-sm text-center py-8">{error}</p>
+          ) : comments.length === 0 ? (
             <p className="text-[#a8a8a8] text-sm text-center py-8">
               Комментариев пока нет
             </p>
           ) : (
             comments.map((c) => (
               <div key={c.id} className="text-sm">
-                <span className="font-semibold mr-2">{c.username}</span>
+                <Link
+                  to={`/u/${encodeURIComponent(c.username)}`}
+                  className="font-semibold mr-2 text-white"
+                >
+                  {c.username}
+                </Link>
                 <span>{c.text}</span>
               </div>
             ))
@@ -53,7 +68,7 @@ const CommentsModal = function CommentsModal({
             placeholder="Добавьте комментарий..."
             value={commentValue || ""}
             onChange={onCommentChange}
-            className="flex-1 bg-[#000] border border-[#363636] rounded-lg px-3 py-2 text-sm outline-none text-white"
+            className="flex-1 bg-black border border-[#363636] rounded-lg px-3 py-2 text-sm outline-none text-white"
           />
           <button
             type="submit"
