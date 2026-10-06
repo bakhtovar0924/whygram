@@ -33,11 +33,13 @@ const ChatList = function ChatList({ conversations, activeId, onSelect }) {
           key={c.user.id}
           type="button"
           onClick={() => onSelect(c.user.id)}
-          className={`w-full flex items-center gap-3 p-3 rounded-lg border-0 cursor-pointer text-left transition-colors ${
+          className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${
             activeId === c.user.id ? "bg-[#121212]" : "bg-transparent hover:bg-[#121212]"
-          }`}
+          } border-0 cursor-pointer text-left`}
         >
-          <Avatar src={c.user.avatar} name={c.user.username} size={44} />
+          <span className="shrink-0 pointer-events-none">
+            <Avatar src={c.user.avatar} name={c.user.username} size={44} />
+          </span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm font-semibold text-white truncate">
@@ -48,14 +50,16 @@ const ChatList = function ChatList({ conversations, activeId, onSelect }) {
               </span>
             </div>
             <div className="text-xs text-[#a8a8a8] truncate">
-              {c.isFollowingMe && !c.isFollowingThem ? (
-                <span className="text-[#0095f6] font-semibold">Подписан(а) на вас · </span>
-              ) : c.isFollowingThem && !c.isFollowingMe ? (
-                <span className="text-[#0095f6] font-semibold">Вы подписаны · </span>
-              ) : c.mutual ? (
-                <span className="text-emerald-400 font-semibold">Взаимно · </span>
-              ) : null}
-              {c.lastMessage?.text || "Начните общение"}
+              <span className="block truncate">
+                {c.isFollowingMe && !c.isFollowingThem ? (
+                  <span className="text-[#0095f6] font-semibold">Подписан(а) на вас · </span>
+                ) : c.isFollowingThem && !c.isFollowingMe ? (
+                  <span className="text-[#0095f6] font-semibold">Вы подписаны · </span>
+                ) : c.mutual ? (
+                  <span className="text-emerald-400 font-semibold">Взаимно · </span>
+                ) : null}
+                {c.lastMessage?.text || "Начните общение"}
+              </span>
             </div>
           </div>
         </button>

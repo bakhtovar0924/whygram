@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Avatar from "../../../shared/ui/Avatar";
 import FollowButton from "../../../features/follow/ui/FollowButton";
+import { Link } from "react-router-dom";
 
 function timeLabel(iso) {
   if (!iso) return "";
@@ -17,8 +18,10 @@ const ChatThread = function ChatThread({
   onSend,
   onDeleteMessage,
   onClearThread,
+  onBack,
 }) {
   const [text, setText] = useState("");
+  const [selectedMessageId, setSelectedMessageId] = useState(null);
   const endRef = useRef(null);
 
   useEffect(() => {
@@ -35,12 +38,31 @@ const ChatThread = function ChatThread({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-[#262626]">
+      <div className="flex items-center justify-between gap-2 px-3 sm:px-4 py-3 border-b border-[#262626]">
         <div className="flex items-center gap-3 min-w-0">
-          <Avatar src={user.avatar} name={user.username} size={34} />
-          <span className="text-sm font-semibold truncate">@{user.username}</span>
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label="Назад к списку диалогов"
+            className="md:hidden shrink-0 bg-transparent border-0 text-[#a8a8a8] hover:text-white p-1 cursor-pointer"
+          >
+            <i className="fa-solid fa-arrow-left" />
+          </button>
+          <Link
+            to={`/u/${encodeURIComponent(user.username)}`}
+            aria-label={`Открыть профиль @${user.username}`}
+            className="shrink-0"
+          >
+            <Avatar src={user.avatar} name={user.username} size={34} />
+          </Link>
+          <Link
+            to={`/u/${encodeURIComponent(user.username)}`}
+            className="text-sm font-semibold truncate text-white"
+          >
+            @{user.username}
+          </Link>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {thread.length ? (
             <button
               type="button"
@@ -56,19 +78,29 @@ const ChatThread = function ChatThread({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2">
         {thread.map((m, i) => {
           const mine = String(m.from) === String(myId);
+          const messageId = String(m.id || i);
+          const isSelected = selectedMessageId === messageId;
           return (
             <div
               key={m.id || i}
-              className={`group flex ${mine ? "justify-end" : "justify-start"}`}
+              className={`group flex ${
+                isSelected ? "pb-8" : "md:hover:pb-8"
+              } ${mine ? "justify-end" : "justify-start"}`}
             >
-              <div className="relative max-w-[75%]">
-                <div
-                  className={`px-3 py-2 rounded-2xl text-sm ${
+              <div className="relative min-w-18 max-w-[75%]">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedMessageId(isSelected ? null : messageId)
+                  }
+                  aria-label={`Показать действия для сообщения: ${m.text}`}
+                  aria-expanded={isSelected}
+                  className={`block w-full text-left px-3 py-2 rounded-2xl text-sm wrap-break-word border-0 cursor-pointer transition-shadow ${
                     mine ? "bg-[#0095f6] text-white" : "bg-[#262626] text-white"
-                  }`}
+                  } ${isSelected ? "ring-2 ring-white/40" : ""}`}
                 >
                   {m.text}
                   <div
@@ -78,18 +110,24 @@ const ChatThread = function ChatThread({
                   >
                     {timeLabel(m.createdAt)}
                   </div>
-                </div>
+                </button>
                 {!String(m.id).startsWith("m_temp_") ? (
                   <button
                     type="button"
-                    onClick={() => onDeleteMessage(m.id)}
+                    onClick={() => {
+                      setSelectedMessageId(null);
+                      onDeleteMessage(m.id);
+                    }}
                     title="Удалить сообщение"
-                    aria-label="Удалить сообщение"
-                    className={`absolute -top-1 w-5 h-5 -mr-1 rounded-full bg-[#262626] text-[#a8a8a8] opacity-0 group-hover:opacity-100 hover:text-[#ed4956] flex items-center justify-center border-0 cursor-pointer transition-opacity ${
-                      mine ? "-right-1" : "-left-1"
-                    }`}
+                    aria-label={`Удалить сообщение: ${m.text}`}
+                    className={`absolute left-0 top-full mt-1 min-h-7 min-w-18 max-w-full px-2 py-1 rounded-md bg-[#262626] text-[#a8a8a8] text-xs ${
+                      isSelected
+                        ? "opacity-100"
+                        : "opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+                    } hover:text-[#ed4956] inline-flex items-center justify-center gap-2 border-0 cursor-pointer transition-opacity`}
                   >
-                    <i className="fa-solid fa-trash-can text-[9px]" />
+                    <i className="fa-solid fa-trash-can" />
+                    <span>Удалить</span>
                   </button>
                 ) : null}
               </div>
@@ -101,20 +139,22 @@ const ChatThread = function ChatThread({
 
       <form
         onSubmit={submit}
-        className="flex items-center gap-2 p-3 border-t border-[#262626]"
+        className="flex items-center gap-2 p-2 sm:p-3 border-t border-[#262626]"
       >
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Сообщение..."
-          className="flex-1 bg-[#121212] border border-[#363636] rounded-lg px-3 py-2 text-sm outline-none text-white placeholder-[#a8a8a8]"
+          className="flex-1 min-w-0 bg-[#121212] border border-[#363636] rounded-lg px-3 py-2 text-sm outline-none text-white placeholder-[#a8a8a8]"
         />
         <button
           type="submit"
           disabled={!text.trim()}
-          className="bg-[#0095f6] hover:bg-[#1877f2] disabled:opacity-40 text-white text-sm font-semibold px-4 py-2 rounded-lg border-0 cursor-pointer"
+          aria-label="Отправить сообщение"
+          className="bg-[#0095f6] hover:bg-[#1877f2] disabled:opacity-40 text-white text-sm font-semibold px-3 sm:px-4 py-2 rounded-lg border-0 cursor-pointer shrink-0"
         >
-          Отправить
+          <i className="fa-regular fa-paper-plane sm:hidden" />
+          <span className="hidden sm:inline">Отправить</span>
         </button>
       </form>
     </div>

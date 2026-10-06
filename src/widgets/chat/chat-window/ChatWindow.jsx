@@ -7,13 +7,9 @@ import {
 } from "../../../entities/message/messagesApi";
 
 const ChatWindow = function ChatWindow({ conversations, myId, setMessages }) {
-  const [activeId, setActiveId] = useState(
-    conversations[0]?.user?.id || null
-  );
+  const [activeId, setActiveId] = useState(null);
   const active =
-    conversations.find((c) => String(c.user.id) === String(activeId)) ||
-    conversations[0] ||
-    null;
+    conversations.find((c) => String(c.user.id) === String(activeId)) || null;
 
   const handleSend = async (text) => {
     if (!active) return;
@@ -61,8 +57,7 @@ const ChatWindow = function ChatWindow({ conversations, myId, setMessages }) {
 
   return (
     <div
-      className="border border-[#262626] rounded-xl overflow-hidden bg-black flex flex-col md:flex-row"
-      style={{ height: "min(70vh, 560px)" }}
+      className="h-[calc(100dvh-220px)] min-h-[320px] md:h-[min(70vh,560px)] md:min-h-0 border border-[#262626] rounded-xl overflow-hidden bg-black flex flex-col md:flex-row"
     >
       <div
         className={`md:w-72 shrink-0 md:border-r md:border-[#262626] overflow-y-auto ${
@@ -76,7 +71,7 @@ const ChatWindow = function ChatWindow({ conversations, myId, setMessages }) {
         />
       </div>
 
-      <div className={`flex-1 min-h-0 ${active ? "block" : "hidden md:block"}`}>
+      <div className={`flex-1 min-h-0 min-w-0 ${active ? "block" : "hidden md:block"}`}>
         {active ? (
           <ChatThread
             user={active.user}
@@ -85,6 +80,7 @@ const ChatWindow = function ChatWindow({ conversations, myId, setMessages }) {
             onSend={handleSend}
             onDeleteMessage={handleDeleteMessage}
             onClearThread={handleClearThread}
+            onBack={() => setActiveId(null)}
           />
         ) : (
           <div className="h-full flex items-center justify-center text-[#a8a8a8] text-sm">
