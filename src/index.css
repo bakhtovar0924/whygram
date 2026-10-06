@@ -38,3 +38,13 @@ body,
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+.reels-viewport {
+  height: calc(100dvh - 120px);
+}
+
+@media (min-width: 768px) {
+  .reels-viewport {
+    height: 100dvh;
+  }
+}

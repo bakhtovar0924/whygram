@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getPosts } from "../../entities/post/postsApi";
 import { useAuth } from "../../features/auth/AuthContext";
 import ReelCard from "../../widgets/reels/reel-card/ReelCard";
 import CommentsModal from "../../widgets/posts/comments-modal/CommentsModal";
 import {
   addComment,
+  getComments,
   addLike,
   removeLike,
   patchPost,
@@ -16,7 +17,50 @@ const Reels = function Reels() {
   const [loading, setLoading] = useState(true);
   const [myLikeIds, setMyLikeIds] = useState({});
   const [openCommentsId, setOpenCommentsId] = useState(null);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentsError, setCommentsError] = useState("");
   const [commentInputs, setCommentInputs] = useState({});
+  const commentsRequestId = useRef(null);
+
+  const openComments = async (postId) => {
+    commentsRequestId.current = postId;
+    setOpenCommentsId(postId);
+    setCommentsLoading(true);
+    setCommentsError("");
+
+    try {
+      const comments = await getComments(postId);
+      setReels((prev) =>
+        prev.map((reel) =>
+          String(reel.id) === String(postId)
+            ? {
+                ...reel,
+                comments: Array.isArray(comments) ? comments : [],
+                commentsCount: Array.isArray(comments)
+                  ? comments.length
+                  : reel.commentsCount,
+              }
+            : reel,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+      if (commentsRequestId.current === postId) {
+        setCommentsError("Не удалось загрузить комментарии. Попробуйте ещё раз.");
+      }
+    } finally {
+      if (commentsRequestId.current === postId) {
+        setCommentsLoading(false);
+      }
+    }
+  };
+
+  const closeComments = () => {
+    commentsRequestId.current = null;
+    setOpenCommentsId(null);
+    setCommentsLoading(false);
+    setCommentsError("");
+  };
   useEffect(() => {
     setLoading(true);
     Promise.all([
@@ -129,7 +173,7 @@ const Reels = function Reels() {
 
   if (loading) {
     return (
-      <div className="h-[100dvh] flex items-center justify-center bg-black text-white">
+      <div className="reels-viewport flex items-center justify-center bg-black text-white">
         Загрузка Reels…
       </div>
     );
@@ -137,27 +181,29 @@ const Reels = function Reels() {
 
   if (reels.length === 0) {
     return (
-      <div className="h-[100dvh] flex items-center justify-center bg-black text-[#a8a8a8] text-sm px-4 text-center">
+      <div className="reels-viewport flex items-center justify-center bg-black text-[#a8a8a8] text-sm px-4 text-center">
         Пока нет Reels. Загрузите видео через «Создать».
       </div>
     );
   }
 
   return (
-    <div className="h-[100dvh] w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar bg-black">
+    <div className="reels-viewport w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar bg-black">
       {reels.map((reel) => (
-        <div key={reel.id} className="h-[100dvh] w-full snap-start snap-always">
+        <div key={reel.id} className="h-full w-full snap-start snap-always">
           <ReelCard
             reel={reel}
             isLiked={Boolean(myLikeIds[reel.id]) || reel.isLiked}
             onLike={() => handleLike(reel)}
-            onOpenComments={() => setOpenCommentsId(reel.id)}
+            onOpenComments={() => openComments(reel.id)}
           />
         </div>
       ))}
 
       <CommentsModal
         post={commentsReel}
+        loading={commentsLoading}
+        error={commentsError}
         commentValue={commentInputs[openCommentsId]}
         onCommentChange={(e) =>
           setCommentInputs((p) => ({
@@ -166,7 +212,7 @@ const Reels = function Reels() {
           }))
         }
         onSubmit={(e) => handleCommentSubmit(openCommentsId, e)}
-        onClose={() => setOpenCommentsId(null)}
+        onClose={closeComments}
       />
     </div>
   );
